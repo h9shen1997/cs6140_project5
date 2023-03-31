@@ -4,10 +4,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from task1 import market_sym
+from constants import INPUT_DIM, OUTPUT_DIM, SEED_NUMBER, MARKET_SYM, TIME_STEPS
 from task2 import train, test, preprocess_data, read_file
-
-time_steps = 5
 
 
 class StockPredictorCNN(nn.Module):
@@ -29,17 +27,15 @@ class StockPredictorCNN(nn.Module):
         return x
 
 
-def create_dataset(X, y, time_steps=5):
+def create_dataset(X, y, window_size=5):
     Xs, ys = [], []
-    for i in range(len(X) - time_steps):
-        Xs.append(X.iloc[i:(i + time_steps)].values)
-        ys.append(y.iloc[i + time_steps])
+    for i in range(len(X) - window_size):
+        Xs.append(X.iloc[i:(i + window_size)].values)
+        ys.append(y.iloc[i + window_size])
     return np.array(Xs), np.array(ys)
 
 
 def main():
-    INPUT_DIM = 83
-    OUTPUT_DIM = 3
     model = StockPredictorCNN(INPUT_DIM, OUTPUT_DIM)
 
     train_df = read_file('./CNNpred/day1prediction_train.csv')
@@ -49,7 +45,7 @@ def main():
 
     market_acc = []
     print('Using cnn model...')
-    for market in market_sym:
+    for market in MARKET_SYM:
         print(f'Predicting {market} price...')
         X_train, y_train = preprocess_data(train_df, market)
         X_test, y_test = preprocess_data(test_df, market)
@@ -60,8 +56,8 @@ def main():
         print(y_train.shape)
         print(y_test.shape)
 
-        X_train_3D, y_train_3D = create_dataset(X_train, y_train, time_steps)
-        X_test_3D, y_test_3D = create_dataset(X_test, y_test, time_steps)
+        X_train_3D, y_train_3D = create_dataset(X_train, y_train, TIME_STEPS)
+        X_test_3D, y_test_3D = create_dataset(X_test, y_test, TIME_STEPS)
 
         # prepare tensor from dataframe
         X_train_tensor = torch.tensor(X_train_3D, dtype=torch.float32)
@@ -83,10 +79,9 @@ def main():
         market_acc.append(acc)
 
     print(f'Average price direction prediction accuracy: {sum(market_acc) / len(market_acc)}')
-    print(pd.DataFrame({'market': market_sym, 'accuracy': market_acc}).to_string(index=False))
+    print(pd.DataFrame({'market': MARKET_SYM, 'accuracy': market_acc}).to_string(index=False))
 
 
 if __name__ == '__main__':
-    seed_numer = 42
-    torch.manual_seed(seed_numer)
+    torch.manual_seed(SEED_NUMBER)
     main()

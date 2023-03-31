@@ -4,8 +4,8 @@ from collections import deque
 import numpy as np
 import pandas as pd
 
-market_sym = ['DJI', 'NASDAQ', 'NYSE', 'RUSSELL', 'S&P']
-NUM_MARKET_SYM = 5
+from constants import NUM_MARKET_SYM, MARKET_SYM, SPLIT_INDEX, DISPLAY_MAX_COL, ESTIMATE_WINDOW_SIZE, UP_LABEL, \
+    NO_CHANGE_LABEL, DOWN_LABEL
 
 
 def read_data(file_prefix: str) -> None:
@@ -15,7 +15,7 @@ def read_data(file_prefix: str) -> None:
     :return: None
     """
     filenames = []
-    for suffix in market_sym:
+    for suffix in MARKET_SYM:
         filename = f'{file_prefix}_{suffix}.csv'
         filenames.append(filename)
 
@@ -55,9 +55,6 @@ def read_data(file_prefix: str) -> None:
     for i in range(5):
         price_data = df_list[i]['Close'].tolist()
         price_dir = [1]
-        UP_LABEL = 0
-        NO_CHANGE_LABEL = 1
-        DOWN_LABEL = 2
         intelligent_fill(price_data)
         for k in range(len(price_data) - 1):
             if price_data[k] < price_data[k + 1]:
@@ -66,31 +63,30 @@ def read_data(file_prefix: str) -> None:
                 price_dir.append(NO_CHANGE_LABEL)
             else:
                 price_dir.append(DOWN_LABEL)
-        all_data[f'{market_sym[i]}_price_dir'] = price_dir
-        all_data[f'{market_sym[i]}_price'] = price_data
+        all_data[f'{MARKET_SYM[i]}_price_dir'] = price_dir
+        all_data[f'{MARKET_SYM[i]}_price'] = price_data
 
     all_data.to_csv('./CNNpred/day1prediction.csv', index=False)
     print(all_data.isna().any().any())
 
 
-def intelligent_fill(l: list):
-    n = len(l)
+def intelligent_fill(list_with_na: list):
+    n = len(list_with_na)
     queue = deque()
     for i in reversed(range(n)):
-        if np.isnan(l[i]):
+        if np.isnan(list_with_na[i]):
             cur_sum = 0.
             cur_len = len(queue) if len(queue) > 0 else 1
             for element in queue:
                 cur_sum += element
             avg = cur_sum / cur_len
-            l[i] = avg
-        if len(queue) >= 5:
+            list_with_na[i] = avg
+        if len(queue) >= ESTIMATE_WINDOW_SIZE:
             queue.popleft()
-        queue.append(l[i])
+        queue.append(list_with_na[i])
 
 
 def train_test_split():
-    SPLIT_INDEX = 1761
     df = pd.read_csv('./CNNpred/day1prediction.csv')
     train_df = df.iloc[:SPLIT_INDEX]
     test_df = df.iloc[SPLIT_INDEX:]
@@ -99,7 +95,7 @@ def train_test_split():
 
 
 def main():
-    pd.set_option('display.max_columns', 500)
+    pd.set_option('display.max_columns', DISPLAY_MAX_COL)
     read_data('./CNNpred/Processed')
     train_test_split()
 

@@ -11,17 +11,20 @@ from task2 import train, test, preprocess_data, read_file
 class StockPredictorCNN(nn.Module):
     def __init__(self, input_channels, num_classes=3):
         super(StockPredictorCNN, self).__init__()
-        self.conv1 = nn.Conv1d(input_channels, 32, kernel_size=3, padding=1)
-        self.conv2 = nn.Conv1d(32, 64, kernel_size=3, padding=1)
-        self.fc1 = nn.Linear(128, 128)
-        self.fc2 = nn.Linear(128, num_classes)
+        conv1_output_channels = 60
+        self.conv1 = nn.Conv1d(input_channels, conv1_output_channels, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv1d(conv1_output_channels, conv1_output_channels // 2, kernel_size=3, padding=1)
+        fc1_input_channels = TIME_STEPS // 2 * conv1_output_channels // 2
+        self.fc1 = nn.Linear(fc1_input_channels, 60)
+        self.fc2 = nn.Linear(60, num_classes)
 
     def forward(self, x):
         x = x.permute(0, 2, 1)
         x = F.relu(self.conv1(x))
-        x = F.max_pool1d(x, 2)
         x = F.relu(self.conv2(x))
+        x = F.max_pool1d(x, 2)
         x = x.view(x.size(0), -1)
+        print(x.shape)
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
         return x
@@ -70,7 +73,7 @@ def main():
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
         # train the model on the training set
-        train(X_train_tensor, y_train_tensor, model, criterion, optimizer, epochs=30)
+        train(X_train_tensor, y_train_tensor, model, criterion, optimizer, epochs=10)
 
         # Evaluate the model on the test set
         acc = test(X_test_tensor, y_test_tensor, model)

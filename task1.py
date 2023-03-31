@@ -73,28 +73,6 @@ def read_data(file_prefix: str) -> None:
     print(all_data.isna().any().any())
 
 
-# def generate_price_dir(y_pred_list, y_test_list):
-#     UP_LABEL = 1
-#     NO_CHANGE_LABEL = 0
-#     DOWN_LABEL = -1
-#     y_pred_dir = []
-#     y_test_dir = []
-#     for i in range(len(y_pred_list) - 1):
-#         if y_pred_list[i + 1] > y_pred_list[i]:
-#             y_pred_dir.append(UP_LABEL)
-#         elif y_pred_list[i + 1] < y_pred_list[i]:
-#             y_pred_dir.append(DOWN_LABEL)
-#         else:
-#             y_pred_dir.append(NO_CHANGE_LABEL)
-#         if y_test_list[i + 1] > y_test_list[i]:
-#             y_test_dir.append(UP_LABEL)
-#         elif y_test_list[i + 1] < y_test_list[i]:
-#             y_test_dir.append(DOWN_LABEL)
-#         else:
-#             y_test_dir.append(NO_CHANGE_LABEL)
-#     return y_pred_dir, y_test_dir
-
-
 def intelligent_fill(l: list):
     n = len(l)
     queue = deque()

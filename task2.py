@@ -18,6 +18,7 @@ class FFNN(nn.Module):
         self.fc3 = nn.Linear(32, output_size)
 
     def forward(self, x):
+        x = x.view(x.size(0), -1)
         x = torch.relu(self.fc1(x))
         x = torch.relu(self.fc2(x))
         x = self.fc3(x)
@@ -33,7 +34,7 @@ class RNN(nn.Module):
 
     def forward(self, x):
         h0 = torch.zeros(1, x.size(0), self.hidden_size)
-        x = x.view(x.size(0), 1, x.size(1))
+        # x = x.view(x.size(0), 1, x.size(1))
         x, hn = self.rnn(x, h0)
         x = self.fc(x[:, -1, :])
         return x
@@ -50,7 +51,7 @@ class LSTM(nn.Module):
     def forward(self, x):
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size)
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size)
-        x = x.view(x.size(0), 1, x.size(1))
+        # x = x.view(x.size(0), 1, x.size(1))
         x, (hn, cn) = self.lstm(x, (h0, c0))
         x = self.fc(x[:, -1, :])
         return x
@@ -97,7 +98,7 @@ def main():
     # drop the first that contains the year 2009 data.
     train_df = train_df.drop(0)
 
-    for model_name in ['lstm', 'rnn', 'ffnn']:
+    for model_name in ['ffnn', 'rnn', 'lstm']:
         market_acc = []
         print(f'Using {model_name} model...')
         model = model_dict[model_name]
@@ -114,7 +115,9 @@ def main():
 
             # prepare tensor from dataframe
             X_train_tensor = torch.tensor(X_train.values, dtype=torch.float32)
+            X_train_tensor = X_train_tensor.reshape(X_train_tensor.shape[0], 1, X_train_tensor.shape[1])
             X_test_tensor = torch.tensor(X_test.values, dtype=torch.float32)
+            X_test_tensor = X_test_tensor.reshape(X_test_tensor.shape[0], 1, X_test_tensor.shape[1])
             y_train_tensor = torch.tensor(y_train.values, dtype=torch.long)
             y_test_tensor = torch.tensor(y_test.values, dtype=torch.long)
 

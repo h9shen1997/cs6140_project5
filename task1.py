@@ -1,3 +1,7 @@
+"""
+Filename: task1.py
+Author: Haotian Shen, Qiaozhi Liu
+"""
 from collections import OrderedDict
 from collections import deque
 
@@ -71,6 +75,16 @@ def read_data(file_prefix: str) -> None:
 
 
 def intelligent_fill(list_with_na: list):
+    """
+    Replaces NaN values in a list using a simple heuristic.
+    :param list_with_na: A list containing NaN values to be replaced
+    :returns: None
+    This function fills in missing values in a list with NaN values. It works by using a sliding window approach to calculate
+    the average of the non-NaN values and uses that as an estimate for the NaN value. Specifically, it takes the previous
+    ESTIMATE_WINDOW_SIZE non-NaN values and calculates their average. If there are fewer than ESTIMATE_WINDOW_SIZE non-NaN
+    values available, it uses the average of the non-NaN values available. This average is used as an estimate for the NaN value.
+    The function replaces NaN values in the original list with the estimated values.
+    """
     n = len(list_with_na)
     queue = deque()
     for i in reversed(range(n)):
@@ -87,6 +101,11 @@ def intelligent_fill(list_with_na: list):
 
 
 def train_test_split():
+    """
+    Reads in a CSV file located at './CNNpred/day1prediction.csv' and splits it into training and testing data using SPLIT_INDEX.
+    The training data is saved to './CNNpred/day1prediction_train.csv', and the testing data is saved to './CNNpred/day1prediction_test.csv'.
+    :return: None
+    """
     df = pd.read_csv('./CNNpred/day1prediction.csv')
     train_df = df.iloc[:SPLIT_INDEX]
     test_df = df.iloc[SPLIT_INDEX:]
@@ -95,6 +114,10 @@ def train_test_split():
 
 
 def main():
+    """
+    Main function.
+    :return: None
+    """
     pd.set_option('display.max_columns', DISPLAY_MAX_COL)
     read_data('./CNNpred/Processed')
     train_test_split()

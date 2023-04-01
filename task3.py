@@ -1,3 +1,7 @@
+"""
+Filename: task3.py
+Author: Haotian Shen, Qiaozhi Liu
+"""
 import numpy as np
 import pandas as pd
 import torch
@@ -9,6 +13,31 @@ from task2 import train, test, preprocess_data, read_file
 
 
 class StockPredictorCNN(nn.Module):
+    """
+    Implementation of a Convolutional Neural Network for stock price prediction.
+
+    :param input_channels: Number of input channels.
+    :type input_channels: int
+    :param conv1_out_channels: Number of output channels for the first convolutional layer.
+    :type conv1_out_channels: int
+    :param num_classes: Number of classes for the classification task. Default is 3.
+    :type num_classes: int
+    :param time_steps: Number of time steps in the input data. Default is DEFAULT_TIME_STEPS.
+    :type time_steps: int
+
+    :ivar conv1: First convolutional layer.
+    :vartype conv1: nn.Conv1d
+    :ivar conv2: Second convolutional layer.
+    :vartype conv2: nn.Conv1d
+    :ivar fc1: First fully connected layer.
+    :vartype fc1: nn.Linear
+    :ivar fc2: Second fully connected layer.
+    :vartype fc2: nn.Linear
+
+    :return: Output tensor of shape (batch_size, num_classes).
+    :rtype: torch.Tensor
+    """
+
     def __init__(self, input_channels, conv1_out_channels, num_classes=3, time_steps=DEFAULT_TIME_STEPS):
         super(StockPredictorCNN, self).__init__()
         self.conv1 = nn.Conv1d(input_channels, conv1_out_channels, kernel_size=3, padding=1)
@@ -18,6 +47,15 @@ class StockPredictorCNN(nn.Module):
         self.fc2 = nn.Linear(60, num_classes)
 
     def forward(self, x):
+        """
+        Forward pass of the StockPredictorCNN.
+
+        :param x: Input tensor of shape (batch_size, input_channels, time_steps).
+        :type x: torch.Tensor
+
+        :return: Output tensor of shape (batch_size, num_classes).
+        :rtype: torch.Tensor
+        """
         x = x.permute(0, 2, 1)
         x = F.relu(self.conv1(x))
         x = F.relu(self.conv2(x))
@@ -30,6 +68,17 @@ class StockPredictorCNN(nn.Module):
 
 
 def create_dataset(X, y, window_size=DEFAULT_TIME_STEPS):
+    """
+    This function creates a dataset for time series analysis by converting the input data and target labels into arrays of windows.
+
+    :param X: pandas dataframe, the input data for time series analysis
+    :param y: pandas series, the target labels for time series analysis
+    :param window_size: int, the size of the window to be used for creating arrays of input data and target labels. Defaults to DEFAULT_TIME_STEPS.
+
+    :return: tuple of numpy arrays, where the first element is an array of input data and the second element is an array of target labels.
+
+    The function loops through the input data and target labels and creates arrays of windows of length 'window_size' for each data point. These arrays of windows are stored in 'Xs' and 'ys' respectively. The function returns 'Xs' and 'ys' as numpy arrays.
+    """
     Xs, ys = [], []
     for i in range(len(X) - window_size):
         Xs.append(X.iloc[i:(i + window_size)].values)
@@ -38,6 +87,10 @@ def create_dataset(X, y, window_size=DEFAULT_TIME_STEPS):
 
 
 def main():
+    """
+    Main function.
+    :return: None
+    """
     model = StockPredictorCNN(INPUT_DIM, 60, OUTPUT_DIM)
 
     train_df = read_file('./CNNpred/day1prediction_train.csv')

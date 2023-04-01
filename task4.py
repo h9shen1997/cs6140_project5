@@ -1,3 +1,7 @@
+"""
+Filename: task4.py
+Author: Haotian Shen, Qiaozhi Liu
+"""
 import pandas as pd
 import torch
 import torch.nn as nn
@@ -10,6 +14,19 @@ from task3 import StockPredictorCNN, create_dataset
 
 
 def reprocess_fine_grained(df: pd.DataFrame):
+    """
+    This function reprocesses market price data into fine-grained market direction labels
+    based on percentage changes between consecutive data points. The labels are as follows:
+
+    BIG_DOWN_LABEL = 0
+    SMALL_DOWN_LABEL = 1
+    FLAT_LABEL = 2
+    SMALL_UP_LABEL = 3
+    BIG_UP_LABEL = 4
+
+    :param df: A pandas DataFrame containing market price data for different markets
+    :return: None
+    """
     BIG_DOWN_LABEL = 0
     SMALL_DOWN_LABEL = 1
     FLAT_LABEL = 2
@@ -37,6 +54,23 @@ def reprocess_fine_grained(df: pd.DataFrame):
 
 
 def preprocess_data(df, market_sym):
+    """
+    This function takes in a pandas dataframe and a market symbol as input and returns preprocessed data.
+
+    :param df: pandas dataframe containing raw data
+    :type df: pandas.DataFrame
+    :param market_sym: string representing the market symbol for which to preprocess data
+    :type market_sym: str
+    :return: tuple containing preprocessed X and y data
+    :rtype: tuple (pandas.DataFrame, pandas.Series)
+
+    This function drops the 'Date' column from the input dataframe and selects all other columns to be used as features for the model.
+    It then drops columns with column names containing 'price', 'price_dir', or 'precise_price_dir' from the features.
+
+    The target variable, y, is extracted from the input dataframe by selecting the column with the name {market_sym}_precise_price_dir.
+
+    The preprocessed data is returned as a tuple of pandas dataframes X and y, where X contains the preprocessed features and y contains the target variable.
+    """
     X = df.drop('Date', axis=1)
     X_col_to_drop = X.filter(regex='(price|price_dir|precise_price_dir)', axis=1).columns
     X = X.drop(X_col_to_drop, axis=1)
@@ -46,6 +80,10 @@ def preprocess_data(df, market_sym):
 
 
 def main():
+    """
+    This function is the main function for task 4. It reads in the data from the csv files and preprocesses the data.
+    :return: None
+    """
     # fine-grained classification using 5 classes
     NEW_NUM_CLASSES = 5
     # use more history days

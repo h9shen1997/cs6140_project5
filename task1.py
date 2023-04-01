@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from constants import NUM_MARKET_SYM, MARKET_SYM, SPLIT_INDEX, DISPLAY_MAX_COL, ESTIMATE_WINDOW_SIZE, UP_LABEL, \
-    NO_CHANGE_LABEL, DOWN_LABEL
+    FLAT_LABEL, DOWN_LABEL
 
 
 def read_data(file_prefix: str) -> None:
@@ -60,7 +60,7 @@ def read_data(file_prefix: str) -> None:
             if price_data[k] < price_data[k + 1]:
                 price_dir.append(UP_LABEL)
             elif price_data[k] == price_data[k + 1]:
-                price_dir.append(NO_CHANGE_LABEL)
+                price_dir.append(FLAT_LABEL)
             else:
                 price_dir.append(DOWN_LABEL)
         all_data[f'{MARKET_SYM[i]}_price_dir'] = price_dir

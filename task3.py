@@ -4,17 +4,16 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from constants import INPUT_DIM, OUTPUT_DIM, SEED_NUMBER, MARKET_SYM, TIME_STEPS
+from constants import INPUT_DIM, OUTPUT_DIM, SEED_NUMBER, MARKET_SYM, DEFAULT_TIME_STEPS
 from task2 import train, test, preprocess_data, read_file
 
 
 class StockPredictorCNN(nn.Module):
-    def __init__(self, input_channels, num_classes=3):
+    def __init__(self, input_channels, conv1_out_channels, num_classes=3, time_steps=DEFAULT_TIME_STEPS):
         super(StockPredictorCNN, self).__init__()
-        conv1_output_channels = 60
-        self.conv1 = nn.Conv1d(input_channels, conv1_output_channels, kernel_size=3, padding=1)
-        self.conv2 = nn.Conv1d(conv1_output_channels, conv1_output_channels // 2, kernel_size=3, padding=1)
-        fc1_input_channels = TIME_STEPS // 2 * conv1_output_channels // 2
+        self.conv1 = nn.Conv1d(input_channels, conv1_out_channels, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv1d(conv1_out_channels, conv1_out_channels // 2, kernel_size=3, padding=1)
+        fc1_input_channels = time_steps // 2 * conv1_out_channels // 2
         self.fc1 = nn.Linear(fc1_input_channels, 60)
         self.fc2 = nn.Linear(60, num_classes)
 
@@ -30,7 +29,7 @@ class StockPredictorCNN(nn.Module):
         return x
 
 
-def create_dataset(X, y, window_size=5):
+def create_dataset(X, y, window_size=DEFAULT_TIME_STEPS):
     Xs, ys = [], []
     for i in range(len(X) - window_size):
         Xs.append(X.iloc[i:(i + window_size)].values)
@@ -39,7 +38,7 @@ def create_dataset(X, y, window_size=5):
 
 
 def main():
-    model = StockPredictorCNN(INPUT_DIM, OUTPUT_DIM)
+    model = StockPredictorCNN(INPUT_DIM, 60, OUTPUT_DIM)
 
     train_df = read_file('./CNNpred/day1prediction_train.csv')
     test_df = read_file('./CNNpred/day1prediction_test.csv')
@@ -59,8 +58,8 @@ def main():
         print(y_train.shape)
         print(y_test.shape)
 
-        X_train_3D, y_train_3D = create_dataset(X_train, y_train, TIME_STEPS)
-        X_test_3D, y_test_3D = create_dataset(X_test, y_test, TIME_STEPS)
+        X_train_3D, y_train_3D = create_dataset(X_train, y_train, DEFAULT_TIME_STEPS)
+        X_test_3D, y_test_3D = create_dataset(X_test, y_test, DEFAULT_TIME_STEPS)
 
         # prepare tensor from dataframe
         X_train_tensor = torch.tensor(X_train_3D, dtype=torch.float32)
